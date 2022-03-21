@@ -21,6 +21,8 @@ This project is for educational porpuses only. Pull request are welcome, but pri
 - DRY code challange
 - With given HTML and CSS template, manipulate HTML with JS
 - Try new Array methods - map, filter, find, reduce, chaining, some and every, sort
+- Internationalizing Numbers and Dates
+- Timer for user logout 
 
 ### Bankist app flowchart
 
