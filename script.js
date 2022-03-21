@@ -211,13 +211,38 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
-// Event handlers
-let currentAccount;
+const starLogOutTimmer = function () {
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+    // in each call, print time to UI
+    labelTimer.textContent = `${min}:${sec}`;
 
-//FAKE ALWAYS LOGGED IN
-currentAccount = account1;
-updateUI(currentAccount);
-containerApp.style.opacity = 100;
+    //When 0 seconds, stop timer and loog out
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = `Log in to get started`;
+      containerApp.style.opacity = 0;
+    }
+    //Decrease one second
+    time--;
+  };
+
+  //set time to 5 minutes
+  let time = 120;
+  //Call the timer every second
+  tick();
+  const timer = setInterval(tick, 1000);
+  return timer;
+};
+
+// EVENT HANDLERS
+let currentAccount, timer;
+
+// FAKE ALWAYS LOGGED IN
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
 
 // LOGIN
 btnLogin.addEventListener('click', function (e) {
@@ -232,6 +257,7 @@ btnLogin.addEventListener('click', function (e) {
     labelWelcome.textContent = `Welcome back ${
       currentAccount.owner.split(' ')[0]
     }`;
+    containerApp.style.opacity = 100;
 
     // SET current login date
     const now = new Date();
@@ -249,19 +275,13 @@ btnLogin.addEventListener('click', function (e) {
       now
     );
 
-    //ANOTHER TYPE OF SETING CURRENT LOGIN DATE
-    // const now = new Date();
-    // const day = `${now.getDate()}`.padStart(2, 0);
-    // const month = `${now.getMonth() + 1}`.padStart(2, 0);
-    // const year = now.getFullYear();
-    // const hour = `${now.getHours()}`.padStart(2, 0);
-    // const min = `${now.getMinutes()}`.padStart(2, 0);
-    // labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
-
-    containerApp.style.opacity = 100;
     //Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    //START log out timmer
+    if (timer) clearInterval(timer);
+    timer = starLogOutTimmer();
 
     // Upadet UI
     updateUI(currentAccount);
@@ -293,6 +313,10 @@ btnTransfer.addEventListener('click', function (e) {
 
     //Update UI
     updateUI(currentAccount);
+
+    //Reset timer
+    clearInterval(timer);
+    timer = starLogOutTimmer();
   }
 });
 
@@ -300,15 +324,21 @@ btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
   const amount = Number(inputLoanAmount.value);
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
-    // add movement
-    currentAccount.movements.push(amount);
-    //Add transfer date
-    currentAccount.movementsDates.push(new Date().toISOString());
-    //update UI
-    updateUI(currentAccount);
-    //clear inpuit fields
+    setTimeout(function () {
+      // add movement
+      currentAccount.movements.push(amount);
+      //Add loan date
+      currentAccount.movementsDates.push(new Date().toISOString());
+      //update UI
+      updateUI(currentAccount);
+    }, 2000);
   }
+  //clear inpuit fields
   inputLoanAmount.value = '';
+
+  //Reset timer
+  clearInterval(timer);
+  timer = starLogOutTimmer();
 });
 
 btnClose.addEventListener('click', function (e) {
