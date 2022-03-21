@@ -17,6 +17,7 @@ const account1 = {
   ],
   pin: 1111,
   locale: 'pt-PT', // de-DE
+  currency: 'EUR',
 };
 
 const account2 = {
@@ -35,6 +36,7 @@ const account2 = {
   ],
   pin: 2222,
   locale: 'en-US',
+  currency: 'USD',
 };
 
 const account3 = {
@@ -42,13 +44,37 @@ const account3 = {
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
   pin: 3333,
+  movementsDates: [
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
+    '2019-12-25T06:04:23.907Z',
+    '2020-01-25T14:18:46.235Z',
+    '2020-02-05T16:33:06.386Z',
+    '2020-04-10T14:43:26.374Z',
+    '2020-06-25T18:49:59.371Z',
+    '2022-03-14T12:01:20.894Z',
+  ],
+  locale: 'en-US',
+  currency: 'USD',
 };
 
 const account4 = {
   owner: 'Sarah Smith',
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
+  movementsDates: [
+    '2019-11-01T13:15:33.035Z',
+    '2019-11-30T09:48:16.867Z',
+    '2019-12-25T06:04:23.907Z',
+    '2020-01-25T14:18:46.235Z',
+    '2020-02-05T16:33:06.386Z',
+    '2020-04-10T14:43:26.374Z',
+    '2020-06-25T18:49:59.371Z',
+    '2022-03-14T12:01:20.894Z',
+  ],
   pin: 4444,
+  locale: 'en-US',
+  currency: 'USD',
 };
 
 const accounts = [account1, account2, account3, account4];
@@ -99,6 +125,14 @@ const formatMovementsDate = function (date) {
   }
 };
 
+//formating currency
+const formatCur = function (value, locale, currency) {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value);
+};
+
 // display movements
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
@@ -112,14 +146,14 @@ const displayMovements = function (acc, sort = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
     const date = new Date(acc.movementsDates[i]);
     const displayDate = formatMovementsDate(date);
-
+    const formattedMovements = formatCur(mov, acc.locale, acc.currency);
     const html = `
     <div class="movements__row">
       <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
     <div class="movements__date">${displayDate}</div>
-      <div class="movements__value">${mov}€</div>
+      <div class="movements__value">${formattedMovements}</div>
     </div>
     `;
     containerMovements.insertAdjacentHTML('afterbegin', html);
@@ -128,19 +162,23 @@ const displayMovements = function (acc, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance} EUR`;
+  labelBalance.textContent = formatCur(acc.balance, acc.locale, acc.currency);
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes}€`;
+  labelSumIn.textContent = formatCur(incomes, acc.locale, acc.currency);
 
   const outcomes = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(outcomes)}€`;
+  labelSumOut.textContent = formatCur(
+    Math.abs(outcomes),
+    acc.locale,
+    acc.currency
+  );
 
   const intrest = acc.movements
     .filter(mov => mov > 0)
@@ -149,7 +187,7 @@ const calcDisplaySummary = function (acc) {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${intrest}€`;
+  labelSumInterest.textContent = formatCur(intrest, acc.locale, acc.currency);
 };
 
 // create username login short name
